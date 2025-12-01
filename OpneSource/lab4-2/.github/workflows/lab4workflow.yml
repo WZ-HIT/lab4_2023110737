@@ -1,0 +1,31 @@
+name: lab4workflow.yml
+on: push # 触发工作流的事件。这里是当有代码被推送到仓库（任何分支）时触发。
+jobs: # 定义一个或多个作业（Job）。一个工作流可以包含多个独立的作业。
+  run_tests: # 这是这个作业的ID/名称，您可以自定义。
+    runs-on: ubuntu-latest # 指定运行这个作业的虚拟机环境。这里使用最新的 Ubuntu Linux 虚拟机。
+    steps: # 定义作业中要执行的一系列步骤。步骤会按顺序执行。
+      - name: Checkout the repository # 步骤名称：签出代码
+        uses: actions/checkout@v4 # 使用 GitHub 官方提供的 checkout action，它会将你的代码仓库克隆到虚拟机上。@v4 表示使用第4个主要版本。
+      - name: Setup JDK 17 # 步骤名称：设置 Java 开发工具包 (JDK) 17
+        uses: actions/setup-java@v4 # 使用 GitHub 官方提供的 setup-java action，用于配置 Java 环境。
+        with: # 该 action 的参数
+          java-version: '17' # 指定要安装的 JDK 版本为 17。
+          distribution: 'temurin' # 指定 JDK 的发行版为 Eclipse Temurin（一个流行的 OpenJDK 分发版）。
+      - name: Cache Maven packages # 步骤名称：缓存 Maven 依赖包
+        uses: actions/cache@v4 # 使用 GitHub 官方提供的 cache action，用于缓存文件。
+        with: # 该 action 的参数
+          path: ~/.m2/repository # 指定要缓存的路径，这里是 Maven 的本地仓库。
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }} # 缓存的唯一键。
+            # ${{ ... }} 是表达式语法。
+            # runner.os：运行器的操作系统 (e.g., 'Linux')
+            # m2：自定义标识符
+            # hashFiles('**/pom.xml')：根据项目中的所有 pom.xml 文件内容生成一个哈希值。
+          # 如果 pom.xml 文件内容发生变化，哈希值也会变，从而失效旧的缓存，创建新的缓存。
+          restore-keys: | # 恢复缓存的备用键。如果主键不匹配，会尝试按这些备用键匹配。
+            ${{ runner.os }}-m2- # 如果 pom.xml 变化不大，尝试恢复之前操作系统和 m2 相关的缓存。
+      - name: Run tests with Maven # 步骤名称：使用 Maven 运行测试
+        run: mvn -B test --file pom.xml # 执行一个 shell 命令。
+          # mvn：调用 Maven 命令。
+          # -B 或 --batch-mode：以批处理模式运行 Maven，禁用交互式输入，适合自动化环境。
+          # test：执行 Maven 的 test 生命周期阶段，这将编译测试代码并运行所有单元测试。
+        # --file pom.xml：明确指定要使用的 pom.xml 文件（即使在当前目录，指定也无妨）。
