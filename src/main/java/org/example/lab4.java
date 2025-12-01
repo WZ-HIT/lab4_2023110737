@@ -50,7 +50,7 @@ public class lab4 {
     public static void main(String[] args) {
         Solution18 solution = new Solution18();
 
-        int[] nums1 = {1, 2, 3, 4};
+        //int[] nums1 = {1, 2, 3, 4};
         int[] result1 = solution.productExceptSelf(nums1);
         System.out.println("输入: [1,2,3,4]");
         System.out.println("输出: " + Arrays.toString(result1));
